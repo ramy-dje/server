@@ -17,10 +17,14 @@ import organismeRouter from "./routes/organismeRoutes";
 import { v2 as cloudinary } from "cloudinary";
 import portfolioRouter from "./routes/portfolioRoutes";
 import userRouter from "./routes/userRoutes";
+import http from 'http';
+
 
 require("dotenv").config();
 
-const server = express();
+const app = express();
+
+export const server = http.createServer(app);
 
 cloudinary.config({
   cloud_name: process.env.CLOUDE_NAME,
@@ -28,20 +32,20 @@ cloudinary.config({
   api_secret: process.env.CLOUDE_KEY,
 });
 
-server.use(express.json({ limit: "50mb" }));
-server.use(
+app.use(express.json({ limit: "50mb" }));
+app.use(
   cors({
     origin: process.env.ORIGIN,
   })
 );
-server.use(cookieParser());
+app.use(cookieParser());
 
 const connectionDB = async () => {
   try {
     await mongoose.connect(`${process.env.MONGODB_URL}`).then(() => {
-      server.listen(process.env.PORT, () => console.log(`${process.env.PORT}`));
       console.log("Connected to Mongo");
     });
+    server.listen(process.env.PORT, () => console.log(`${process.env.PORT}`));
   } catch (err) {
     console.log(err);
     setTimeout(() => connectionDB(), 5000);
@@ -49,18 +53,22 @@ const connectionDB = async () => {
 };
 
 connectionDB();
-server.use(authRouter);
-//server.use(refreshAccessToken);
-//server.use(isAuthorized);
-server.use(plantRoute);
-server.use(purchaseRouter);
-server.use(articleRouter);
-server.use(problemRouter);
-server.use(projectRouter);
-server.use(messageRouter);
-server.use(notificationRouter);
-server.use(specialisteRouter);
-server.use(freelancerRouter);
-server.use(organismeRouter);
-server.use(portfolioRouter);
-server.use(userRouter);
+
+
+
+
+app.use(authRouter);
+//app.use(refreshAccessToken);
+//app.use(isAuthorized);
+app.use(plantRoute);
+app.use(purchaseRouter);
+app.use(articleRouter);
+app.use(problemRouter);
+app.use(projectRouter);
+app.use(messageRouter);
+app.use(notificationRouter);
+app.use(specialisteRouter);
+app.use(freelancerRouter);
+app.use(organismeRouter);
+app.use(portfolioRouter);
+app.use(userRouter);

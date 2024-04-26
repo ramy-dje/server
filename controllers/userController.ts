@@ -100,5 +100,22 @@ export async function getContacts(req: Request, res: Response){
     res.status(500).send('Internal server error');
   }
 }
+export async function getUserById(req: Request, res: Response){ 
+  
+  try {
+    const {id} = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    res.status(200).json({success:true ,user});
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal server error');
+  }
+}
+
+
+
 
 

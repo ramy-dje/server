@@ -4,31 +4,22 @@ import Message from "../models/messageModel";
 
 export const getConversation = async (req: Request, res: Response) => {
   try {
-    const { senderId, receiverId } = req.body;
+    const { receiverId } = req.params;
+    const senderId = (req as any).user._id;
     if (!senderId || !receiverId) {
       throw new Error("You dont give me the sender id or receiver id");
     }
-    const limit = 20;
-    const skip = (parseInt(req.params.id) - 1) * limit;
+    //const limit = 20;
+   // const skip = (parseInt(req.params.id) - 1) * limit;
     const messages = await Message.find({
       $or: [
         { senderId, receiverId },
         { senderId: receiverId, receiverId: senderId },
       ],
     })
-      .populate([
-        {
-          path: "senderId",
-          select: "avatar",
-        },
-        {
-          path: "receiverId",
-          select: "avatar",
-        },
-      ])
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+      //.sort({ createdAt: -1 })
+      /*.skip(skip)
+      .limit(limit);*/
     if (messages.length === 0) {
       throw new Error("thats all the messages");
     }

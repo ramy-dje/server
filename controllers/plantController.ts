@@ -12,6 +12,7 @@ export const addPlant = async (req: Request, res: Response) => {
       folder: "avatars",
       width: 150,
     });
+   
     if (images.length > 0) {
       for (const image of images) {
         const myCloud = await cloudinary.v2.uploader.upload(image.toString(), {
@@ -24,6 +25,7 @@ export const addPlant = async (req: Request, res: Response) => {
         });
       }
     }
+   
     const plant: IPlant = await Plant.create({
       name,
       description,
@@ -82,19 +84,20 @@ export const getPlant = async (req: Request, res: Response) => {
   }
 };
 
-export const getPlantByFilter = async (req: Request, res: Response) => {
+export const getPlantBySeller= async (req: Request, res: Response) => {
   try {
-    const filter = req.body;
-    const plants = await Plant.find(filter).populate([
-      {
-        path: "Owner",
-        select: "fisrtName lastName avatar",
-      },
-      {
-        path: "reviews.userId",
-        select: "fisrtName lastName avatar",
-      },
-    ]);
+    const user = (req as any).user;
+    console.log((req as any).user)
+    const plants = await Plant.find({owner:user._id}).select('-images');
+    res.status(200).json({ success: true, plants });
+  } catch (err) {
+    ErrorHandler(err, 400, res);
+  }
+};
+export const getPlantsByName= async (req: Request, res: Response) => {
+  try {
+    const searchText = req.params.name;
+    const plants = await Plant.find({ name: { $regex: searchText, $options: 'i' } }).select(['-images','-likes','-reviews']);
     res.status(200).json({ success: true, plants });
   } catch (err) {
     ErrorHandler(err, 400, res);
@@ -103,7 +106,7 @@ export const getPlantByFilter = async (req: Request, res: Response) => {
 
 export const updatePlant = async (req: Request, res: Response) => {
   try {
-    const newPlantInfo = req.body;
+    const {name,description,price,owner,quantity,image,images} = req.body;
     const plant = await Plant.findById(req.params.id);
     if (!plant) {
       throw new Error("This plant is not available ");
@@ -113,20 +116,11 @@ export const updatePlant = async (req: Request, res: Response) => {
     }
     const newPlant = await Plant.findByIdAndUpdate(
       req.params.id,
-      newPlantInfo,
+      {name,description,price,owner,quantity,image,images},
       {
         new: true,
       }
-    ).populate([
-      {
-        path: "Owner",
-        select: "fisrtName lastName avatar",
-      },
-      {
-        path: "reviews.userId",
-        select: "fisrtName lastName avatar",
-      },
-    ]);
+    );
     if (!newPlant) {
       throw new Error("We Have a Problem , the plant does not update");
     }

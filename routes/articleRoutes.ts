@@ -33,12 +33,13 @@ articleRouter.delete(
 );
 articleRouter.put(
   "/article/:id",
+  isAuthorized,
   isAuthorizedRole(ERole.SPECIALIST),
   updateArticle
 );
 articleRouter.get("/articles", getArticles);
 articleRouter.get("/article/:id", getArticle);
-articleRouter.get("/article_filter", getArticleByFilter);
+articleRouter.get("/articleByWriter",isAuthorized, getArticleByFilter);
 articleRouter.put("/like_article/:id",isAuthorized, likeArticle);
 articleRouter.put("/comment_article/:id",isAuthorized, commentArticle);
 articleRouter.put("/like_comment/:id",isAuthorized,likeComment);

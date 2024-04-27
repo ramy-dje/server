@@ -54,7 +54,20 @@ export const getSpeacialist = async (req: Request, res: Response) => {
     ErrorHandler(err, 400, res);
   }
 };
-
+export const getSpecialistesByName= async (req: Request, res: Response) => {
+  try {
+    const searchText = req.params.name;
+    const specialistes = await Specialiste.find().populate([{
+    path:'user',
+    select:'firstName lastName avatar'
+  }]).then(users =>
+    users.filter(({user} : any )=> ( new RegExp(searchText, 'i').test(user.firstName) || new RegExp(searchText, 'i').test(user.lastName)))
+  );
+    res.status(200).json({ success: true, specialistes });
+  } catch (err) {
+    ErrorHandler(err, 400, res);
+  }
+};
 export const createSpecialiste = async (req: Request, res: Response) => {
   try {
     const { description, studies, profestionalExp, specialite } = req.body;

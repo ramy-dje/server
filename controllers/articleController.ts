@@ -68,8 +68,10 @@ export const updateArticle = async (req: Request, res: Response) => {
       article.image.public_id = myCloud.public_id;
       article.image.url = myCloud.url;
     }
-    res.status(200).json({ article });
+    await article.save();
+    res.status(200).json({success:true, article });
   } catch (err) {
+    console.log('err')
     ErrorHandler(err, 400, res);
   }
 };
@@ -121,20 +123,8 @@ export const getArticle = async (req: Request, res: Response) => {
 export const getArticleByFilter = async (req: Request, res: Response) => {
   try {
     const filter = req.body;
-    const articles = await Article.find(filter).populate([
-      {
-        path: "creatorId",
-        select: "fisrtName lastName avatar",
-      },
-      {
-        path: "comments.userId",
-        select: "fisrtName lastName avatar",
-      },
-      {
-        path: "comments.replies.userId",
-        select: "fisrtName lastName avatar",
-      },
-    ]);
+    const user = (req as any).user;
+    const articles = await Article.find({creatorId:user._id});
     res.status(200).json({ articles });
   } catch (err) {
     ErrorHandler(err, 400, res);

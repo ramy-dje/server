@@ -67,6 +67,8 @@ const articleSchema = new Schema<IArticle>({
     public_id: String,
     url: String,
   },
+},{
+  timestamps:true
 });
 
 const Article: Model<IArticle> = mongoose.model("Article", articleSchema);

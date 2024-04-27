@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   addPlant,
   getPlant,
-  getPlantByFilter,
+  getPlantBySeller,
   getPlants,
   likePlant,
   removeReviewPlant,
@@ -14,6 +14,7 @@ import {
   changePriceOfPlant,
   getSellerPlants,
   updateReview,
+  getPlantsByName,
 } from "../controllers/plantController";
 import { ERole } from "../models/userModel";
 import { isAuthorized, isAuthorizedRole } from "../utilite/isAthorazed";
@@ -22,9 +23,10 @@ const plantRoute = Router();
 
 plantRoute.get("/plants", getPlants);
 plantRoute.get("/plant/:id", getPlant);
-plantRoute.get("/plant_filter", getPlantByFilter);
+plantRoute.get("/plantBySeller", isAuthorized,getPlantBySeller);
+plantRoute.get("/plantByName/:name",getPlantsByName);
 plantRoute.post("/plant", isAuthorized,isAuthorizedRole(ERole.USER), addPlant);
-plantRoute.put("/plant/:id", isAuthorizedRole(ERole.SELLER), updatePlant);
+plantRoute.put("/plant/:id", isAuthorized, updatePlant);
 plantRoute.delete("/plant/:id", isAuthorizedRole(ERole.SELLER), removePlant);
 plantRoute.put("/like_plant/:id", likePlant);
 plantRoute.put("/plant_review/:id", isAuthorized,addReviewPlant);

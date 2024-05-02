@@ -20,6 +20,9 @@ const createToken = (user: IUser) => {
 export const SignUp = async (req: Request, res: Response) => {
   try {
     const { user }: { user: IUser } = req.body;
+    if(!user){
+      throw new Error("no user exists");
+    }
     const isExist = await User.findOne({ email: user.email });
     if (isExist) {
       throw new Error("Email already exists");
@@ -40,7 +43,7 @@ export const SignUp = async (req: Request, res: Response) => {
       data: activation,
       subject: "Your activation code",
     };
-    //await sendMail(mailOptions);
+    await sendMail(mailOptions);
    
     res.status(200).json({ token, activation });
   } catch (err) {
@@ -68,9 +71,9 @@ export const Activation = async (req: Request, res: Response) => {
     if (isExist) {
       throw new Error("Email already exists");
     }
-    /*if (activationCode.toString() !== activation) {
+    if (activationCode.toString() !== activation) {
       throw new Error("Invalid activation Code");
-    }*/
+    }
     const salt = await bcrypt.genSalt(8);
     const hash = await bcrypt.hash(user.password, salt);
     user.password = hash;

@@ -25,7 +25,7 @@ plantRoute.get("/plants", getPlants);
 plantRoute.get("/plant/:id", getPlant);
 plantRoute.get("/plantBySeller", isAuthorized,getPlantBySeller);
 plantRoute.get("/plantByName/:name",getPlantsByName);
-plantRoute.post("/plant", isAuthorized,isAuthorizedRole(ERole.USER), addPlant);
+plantRoute.post("/plant", isAuthorized, addPlant);
 plantRoute.put("/plant/:id", isAuthorized, updatePlant);
 plantRoute.delete("/plant/:id", isAuthorizedRole(ERole.SELLER), removePlant);
 plantRoute.put("/like_plant/:id", likePlant);

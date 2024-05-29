@@ -108,6 +108,7 @@ export const getPlantsByName= async (req: Request, res: Response) => {
 export const updatePlant = async (req: Request, res: Response) => {
   try {
     const {name,description,price,owner,quantity,image,images} = req.body;
+    
     const plant = await Plant.findById(req.params.id);
     if (!plant) {
       throw new Error("This plant is not available ");
@@ -115,11 +116,11 @@ export const updatePlant = async (req: Request, res: Response) => {
     if (plant?.owner != (req as any).user._id) {
       throw new Error("This plant is not yours ,you can't update it ");
     }
-    let ArrImages: { public_id: string; url: string }[] = [];
     const myCloud = await cloudinary.v2.uploader.upload(image.toString(), {
       folder: "avatars",
       width: 150,
     });
+    let ArrImages: { public_id: string; url: string }[] = [];
    
     if (images.length > 0) {
       for (const image of images) {
@@ -136,14 +137,12 @@ export const updatePlant = async (req: Request, res: Response) => {
    
     const newPlant = await Plant.findByIdAndUpdate(
       req.params.id,
-      {name,description,price,owner,quantity,image,images},
+      {name,description,price,owner,quantity,image:{public_id : myCloud.public_id ,url : myCloud.url},images},
       {
         new: true,
       }
     );
-    if (!newPlant) {
-      throw new Error("We Have a Problem , the plant does not update");
-    }
+   
     res.status(200).json({ success: true, plant: newPlant });
   } catch (err) {
     ErrorHandler(err, 400, res);

@@ -20,12 +20,13 @@ const createToken = (user: IUser) => {
 export const SignUp = async (req: Request, res: Response) => {
   try {
     const { user }: { user: IUser } = req.body;
-    if(!user){
-      throw new Error("no user exists");
+   
+    if(!user.email){
+      return res.json({success:false,message:"no user exists"});
     }
     const isExist = await User.findOne({ email: user.email });
     if (isExist) {
-      throw new Error("Email already exists");
+      return res.json({success:false,message:"Email already exists"});
     }
     const { token, activation } = createToken(user);
     const template = fs.readFileSync(
@@ -45,7 +46,7 @@ export const SignUp = async (req: Request, res: Response) => {
     };
     await sendMail(mailOptions);
    
-    res.status(200).json({ token, activation });
+    res.status(200).json({success:true, token, activation });
   } catch (err) {
     ErrorHandler(err, 400, res);
   }
@@ -58,7 +59,7 @@ export const Activation = async (req: Request, res: Response) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      throw new Error("Invalid Token , You have to Sign Up  again.");
+      return res.json({success:false,message:"Invalid Token , You have to Sign Up  again."});
     }
     const { user, activation } = jwt.verify(
       token,
@@ -91,12 +92,13 @@ export const Activation = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
+    console.log(email)
     const user = await User.findOne({ email });
     if (!user) {
-      throw new Error("Email not found");
+      return res.json({success:false,message:"Email not found"});
     }
     if (!(await bcrypt.compare(password, user.password))) {
-      throw new Error("Password is incorrect");
+      return res.json({success:false,message:"Password is incorrect"});
     }
     console.log('user logged in')
     SendTokens(user, 200, res, req);

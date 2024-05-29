@@ -3,6 +3,7 @@ import { Response, Request, NextFunction } from "express";
 import ErrorHandler from "../ErrorHandler";
 import { makeNotifiaction } from "./notificationController";
 import cloudinary from "cloudinary";
+import ensureHttps from "../utilite/https";
 
 export const addPlant = async (req: Request, res: Response) => {
   try {
@@ -21,7 +22,7 @@ export const addPlant = async (req: Request, res: Response) => {
         });
         ArrImages.push({
           public_id: myCloud.public_id,
-          url: myCloud.url,
+          url:ensureHttps(myCloud.url),
         });
       }
     }
@@ -114,6 +115,25 @@ export const updatePlant = async (req: Request, res: Response) => {
     if (plant?.owner != (req as any).user._id) {
       throw new Error("This plant is not yours ,you can't update it ");
     }
+    let ArrImages: { public_id: string; url: string }[] = [];
+    const myCloud = await cloudinary.v2.uploader.upload(image.toString(), {
+      folder: "avatars",
+      width: 150,
+    });
+   
+    if (images.length > 0) {
+      for (const image of images) {
+        const myCloud = await cloudinary.v2.uploader.upload(image.toString(), {
+          folder: "avatars",
+          width: 150,
+        });
+        ArrImages.push({
+          public_id: myCloud.public_id,
+          url:ensureHttps(myCloud.url),
+        });
+      }
+    }
+   
     const newPlant = await Plant.findByIdAndUpdate(
       req.params.id,
       {name,description,price,owner,quantity,image,images},
@@ -166,10 +186,10 @@ export const addReviewPlant = async (req: Request, res: Response) => {
     if (!plant) {
       throw new Error("id Plant does not exist");
     }
-    const isPurschased = plant.purschased.find((id) => id == user._id);
+    /*const isPurschased = plant.purschased.find((id) => id == user._id);
     if (!isPurschased) {
       throw new Error("You have to buy this Plant to add a review");
-    }
+    }*/
     const isReviewBefore = plant.reviews.find(
       (rev) => (rev as any).userId == user._id
     );

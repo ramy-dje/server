@@ -3,6 +3,7 @@ import ErrorHandler from "../ErrorHandler";
 import Plant, { IPlant } from "../models/plantModel";
 import Purchase from "../models/purchaseModel";
 import { makeNotifiaction } from "./notificationController";
+import mongoose from "mongoose";
 require("dotenv").config();
 
 export const createPurchase = async (req: Request, res: Response) => {
@@ -113,7 +114,12 @@ export const getSellerPurchaes = async (req: Request, res: Response) => {
     }).populate([
       {
         path: "purchases.plantId",
-        select: "name",
+        select: "name image",
+      },
+    ]).populate([
+      {
+        path: "clientId",
+        select: "firstName lastName avatar",
       },
     ]);
     const sellerPurchases = purchases.map((purchase) => {
@@ -126,7 +132,34 @@ export const getSellerPurchaes = async (req: Request, res: Response) => {
         date: purchase.date,
       };
     });
-    res.status(200).json({ success: true, purchases: sellerPurchases });
+   
+    res.status(200).json({ success: true, sales: sellerPurchases });
+  } catch (err) {
+    ErrorHandler(err, 400, res);
+  }
+};
+
+export const confirmePurchaes = async (req: Request, res: Response) => {
+  const {purchaseId,orderPosition} = req.body;
+  try {
+    const purchase:any = await Purchase.findById(purchaseId);
+    purchase.purchases[orderPosition].confirmed = true
+    purchase.save()
+
+    res.status(200).json({ success: true, message:'order confimed successfuly' });
+  } catch (err) {
+    ErrorHandler(err, 400, res);
+  }
+};
+export const deletePurchaes = async (req: Request, res: Response) => {
+  const {purchaseId,orderId} = req.body;
+  try {
+    const purchase:any = await Purchase.findByIdAndUpdate(
+      purchaseId,
+      { $pull: { purchases: { _id: new mongoose.Types.ObjectId(orderId) } } }
+    );
+
+    res.status(200).json({ success: true, message:'order delted successfuly' });
   } catch (err) {
     ErrorHandler(err, 400, res);
   }

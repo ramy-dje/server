@@ -5,6 +5,7 @@ import Article from "../models/articleModel";
 import cloudinary from "cloudinary";
 import mongoose, { ObjectId } from "mongoose";
 import { makeNotifiaction } from "./notificationController";
+import ensureHttps from "../utilite/https";
 require("dotenv").config();
 
 export const createArticle = async (req: Request, res: Response) => {
@@ -23,7 +24,7 @@ export const createArticle = async (req: Request, res: Response) => {
       creatorId: (req as any).user._id,
       image: {
         public_id: myCloud.public_id,
-        url: myCloud.url,
+        url:ensureHttps(myCloud.url),
       },
     });
     if (!article) {
@@ -66,7 +67,7 @@ export const updateArticle = async (req: Request, res: Response) => {
         width: 150,
       });
       article.image.public_id = myCloud.public_id;
-      article.image.url = myCloud.url;
+      article.image.url =ensureHttps(myCloud.url);
     }
     await article.save();
     res.status(200).json({success:true, article });

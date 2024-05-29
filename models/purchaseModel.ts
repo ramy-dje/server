@@ -6,6 +6,7 @@ export interface IPurchase extends Document {
     sellerId: ObjectId;
     quantity: number;
     price: number;
+    confirmed:boolean
   }[];
   clientId: ObjectId;
   date: Date;
@@ -32,6 +33,10 @@ const purchaseSchema = new Schema<IPurchase>({
         type: Number,
         required: [true, " The price of the plant is required"],
       },
+      confirmed:{
+        type: Boolean,
+        default: false,
+      }
     },
   ],
   clientId: {

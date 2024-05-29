@@ -1,5 +1,5 @@
 import cookieParser from "cookie-parser";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import plantRoute from "./routes/plantRoutes";
@@ -18,6 +18,13 @@ import { v2 as cloudinary } from "cloudinary";
 import portfolioRouter from "./routes/portfolioRoutes";
 import userRouter from "./routes/userRoutes";
 import http from 'http';
+import Visitor from "./models/visitorsModel";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDE_NAME,
+  api_key: process.env.CLOUD_API_NAME,
+  api_secret: process.env.CLOUDE_KEY,
+});
 
 
 require("dotenv").config();
@@ -26,11 +33,7 @@ const app = express();
 
 export const server = http.createServer(app);
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDE_NAME,
-  api_key: process.env.CLOUD_API_NAME,
-  api_secret: process.env.CLOUDE_KEY,
-});
+
 
 app.use(express.json({ limit: "50mb" }));
 app.use(
@@ -54,7 +57,7 @@ const connectionDB = async () => {
 
 connectionDB();
 
-
+app.get('/',(reqq,res)=>{return res.json('hilllp')})
 
 
 app.use(authRouter);
@@ -72,3 +75,14 @@ app.use(freelancerRouter);
 app.use(organismeRouter);
 app.use(portfolioRouter);
 app.use(userRouter);
+
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  const visitor = await Visitor.findOne({ ip: req.ip });
+  if (visitor) {
+    visitor.pageView += 1;
+    await visitor.save();
+  } else {
+    await Visitor.create({ ip: req.ip });
+  }
+  next();
+});
